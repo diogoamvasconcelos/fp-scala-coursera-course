@@ -1,2 +1,200 @@
 -> Tools Setup: https://www.coursera.org/learn/progfun1/supplement/BNOBK/tools-setup-please-read
 
+--- Programming Paradigms ---
+
+    -> Imperative
+        . classical
+        . e.g: C, Java,
+
+        - modifiding mutuable variables with assignements
+        - instruction sequences for a Von Newmann computer
+            . Processor  <---Bus---> Memory
+                . Bus width is a machine word (32 or 64 bits now)
+
+            Hardware correspondance
+                - mutable variables -> memory cells
+                - variable dereferences -> load instructions
+                - variable assignements -> store instructions
+                - control structures -> jumps
+
+        - problems:
+            . scalling up -> we conceptualize programes linearly, and even data strucures,  word by word...
+            
+
+    -> Functional
+        . based on mathematical laws and theories
+            -> No Mutations!, there is no mutation of variables!
+            In order to implement high-level concepts based on mathematical theories, there should be no MUTATION!
+
+        . goal:
+            - Avoid mutation
+            - Abstract and compose functions (expressivness by using functions)
+                . no mutable variables, assignements, controls structures (loops, etc)
+                . functions should be the basic data structure
+                    - should be able to define functions anywhere (inside other functions)
+                    - should be able to pass functions as data (as arguments to another functions)
+            - Pros:
+                . Simpler reasoning principles
+                . better modularity
+                . good for parrallelism (multicore or cloud computing)
+
+
+    Recommended book: Structure and Interpretation of Computer Programs. 
+        http://mitpress.mit.edu/sicp/
+
+    
+
+--- RELP (Read-Eval-Print-Loop) ---
+    . interactive shell is an example
+    . reads input expressions and returns their values
+
+        . try the scala "sbt console"
+
+    Evaluation:
+
+        
+        Eval of non-primitive expression:
+            i. take left most operator
+            ii. evaluate its operands (left before right)
+            iii. apply the operator to the operands
+
+        Eval of name:
+            i. replace it with the right hand side of its definition
+
+        . Evaluation is done following the substition model, where the expressions are substituted by their definitions and when not more naming definitions (for variables or expressions/functions) are left, the resulting expression is evaluated
+
+        . All evaluation does is to reduce an expression to a value
+
+    Scala Definitions/Expressions:
+        - variable: def pi = 3.1415
+        - function: def square(x: Double) = x * x    (special variable with parameters)
+
+    Primitive Types - like Java but Capitalized:
+        Int - 32bit integer
+        Double - 64bit floating point
+        Boolean - ..
+
+
+    Evaluation Types:
+        - Call-by-Value (CBV)
+            . Resolve arguments before applying the functions
+                . g: squares(2+2) = squares(4) = 4*4 = 16
+            . pros: evaluates every function argument only once
+
+        - Call-by-Name (CBN)
+            . Apply function to unreduced arguments (arguments are last to be evaled)
+                .e.g: squares(2+2) = (2+2) * (2+2) = 4*4 = 16
+            . pros: function argument is not evaluated if the corresponding parameter is unused in the eval of the function body
+    
+        Note: Both strategies reduce to the final value (both work!!)
+
+    Some evaluations do not terminate (loops, recursion)
+        Theorem:
+            . If CBV evaluation terminates, then CBN also terminates
+            . The other direction is not true.... (CBN better!)
+                e.g: foo(x, foo) = x  (CBV will loop forever)
+
+    Scala: 
+        i.  uses CBV at first
+            . is way more effecient for the worse cases (having to repeat arguemnt calculation a lot)
+
+        ii. once arguments are resolved, uses CBN for function eval
+            . more effecient as it does not use unnecessary arguments
+
+        foo(x:Boolean) - call by value (evaluated by CBV)
+        foo(x: => Boolean) - call by name (evaluated by CBN) 
+
+
+
+--- Scala Conditional Expressions ---
+    . if else
+        . abs(x:Int) = if (x >= 0) x else -x
+         
+    . Boolean expressions (&&, ||, !)
+        . are shortcircuited-evaluated (right operand not always is needed to be evaluated)
+
+--- Scala Value Definitions ---
+    . val x = 2
+    . val y = square (x) (eval by value on the definition, y will be 4 and not square(2))
+
+
+--- Some more complexes examples ---
+    . Square root function
+        . using successive approx (Newton)
+            . start with initial estimate y ( y = 1)
+            . repeatl improve the estimate by taking the mean of y and x/y
+
+    . def SqrIter(guess:Double, x:Double):Double=
+        if (IsGoodEnough(guess, x)) guess
+        else SqrIter(improve(guess, x), x)
+
+    NOTE: Recursive functions need an explicit return type in Scala
+            . bc the compiler to "infere" the return type it needs to look at the rhs of the function definition (body), and if it contains the function itself (recursive) it would just loop....type needs to be specified to break this loop
+        . Non-recursive functions, the return type is optional   
+
+    -- Blocks and Lexical Scopes --
+        . for further breakdown of functions and to abstract, define auxilear functions inside a function body
+
+        .eg:
+        def sqrt(x:Double) = {
+
+            def SqrIter(...)....
+            ...
+            .
+
+            SqrIter(1.0, x)
+        }
+
+        Blocks are expresssions and must return a value/expression
+
+    . SEMICOLONS ';'
+        . only really needed to write several definitions in the same line
+            val y = x + 1; y * y
+
+    . LINE BREAKS for long expressions
+        . use parathensithis
+            (some_long_expression
+            + some_long_expression2)
+
+        . write the operator at the end of the line
+            some_long_expression +
+            some_long_expression2
+
+--- Recursion ---
+
+    if the funtion calls itself as its last action, the stack function is reused
+        -> TAIL Recursion
+            . executes in constant stack space -> same as an iterative function (loop)
+            . nice to avoid stack overflow if your function can have very deep recursive calls
+
+            e.g non_tail factorial:
+                def factorial(x:Double):Double =
+                {
+                    if (x == 0) 1 else x * factorial(x-1)
+                }
+
+            e.g tail factorial:
+                def factorial2(x:Double):Double =
+                {
+                    def TailFactorial(x:Double, sum:Double):Double =
+                    {
+                        if (x == 0) sum else TailFactorial(x-1, sum * x)
+                    }
+
+                    TailFactorial(x, 1)
+                }
+
+
+
+
+
+
+
+
+
+
+    
+            
+
+
+
