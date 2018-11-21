@@ -1,0 +1,58 @@
+--- Scala Syntax ---
+
+. grammar to express in Extended Backus-Naur form (EBNF);
+    |       -> alternative
+    [...]   -> an optional element (0 or 1)
+    {...}   -> a repetion of an element (0 or more)
+
+-- Types --
+
+    . SimpleType: Ident (numeric (Int, Double, Byte, Short, Char, Long, Float)), Boolean, String)
+
+    . FunctionType: SimpleType => Type  | ([Types]) => Type
+
+-- Expressions -
+
+    Expr        = InfixExpr | FunctionExpr
+                | if ( Expr ) Expr else Expr
+    
+    InfixExpr   = PrefixExpr | InfixExpr Operator InfixExpr
+
+    Operator    = Ident
+
+    PrefixExpr  = [ + | - | ! | ~ ] SimpleExpr
+
+    SimpleExpr  = ident | literal | SimpleExpr . ident | Block
+
+    FunctionExpr    = Bindings => Expr
+
+    Bindings    = ident [ : SimpleType] | ( [ Binding { , Binding}] )
+
+    Binding     = ident [: Type]
+
+    Block       = { {Def ;} Expr }
+
+    -- and expression can be --
+
+        . identifier, IfGoodEnough
+        . literal, 0, 1.0, "abc"
+        . function application, sqrt(x)
+        . operator application, -x, y+x
+        . selection, math.abs
+        . conditional expression, if (x<0) -x else x
+        . block, { val x = math.abs(y); x *2 }
+        . anonymous function,  x => x + 1
+
+-- Definitions --
+
+    . Function Definitions: def + identifier + args + = + body
+        def square(x:Int) = x*x
+
+    . Value Definitions: val y = square(2)
+
+    A parameter can be:
+        . call-by-value parameter: (x: Int) (C++ by value)
+        . call-by-name parameter: (y: => Double) (C++ by reference)
+
+    
+

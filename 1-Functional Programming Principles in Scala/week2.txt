@@ -1,0 +1,137 @@
+--- Higher Order Functions ---
+    . functions that act on other functions
+    . pass functions as arguments and/or return them as results
+        . bc functional languages treat functions as First-Class VALUES!
+
+        . vs First Order Functions
+            . Dont manipulate other functions, just act on the primitive data types
+
+
+    . E.g: 
+        def sumFactorials(a:Int, b:Int):int =
+            if (a > b) 0 else fact(a) + sumFactorials(a+1, b)   <- sum_a_b(f(n))
+
+            -> lets use a function to define a generic sum:
+
+                def sum(f:Int => Int, a:Int, b:Int):Int = 
+                    if (a>b) 0
+                    else f(a) + sum(f, a+1, b)
+
+                def sumFactorials((a:Int, b:Int):int = sum(fact, a, b)   (nice)
+
+                    , use anonymous functions  -> "literals" for functions!!  no need to define them in a seperate place
+
+                def sumQuadratics((a:Int, b:Int):int = sum((x:Int) => x * x, a, b)   (even nicer I guess)
+
+    - Definining the function signature in the arguments -
+        A => B
+
+        . A -> arguments
+        . B -> return type
+        e.g. Int => Int  , is a function that maps Int to Int
+
+    - Anonymous Functions -
+        . functions as literals, no need to defined them (no name)
+
+        (x:Int) => x * x * x
+
+        you can inline define a function instead 
+            . F1({def F2(x1:Int) = x1 * x1; F1})
+
+--- Currying ---
+    . define function inside another function and returns the function (function that returns function)
+
+        sum (cube) (1, 10)  -> sum(cube) return function equivalent to sumCubes that is then applied to the bounds (1, 10)
+                                . function aplication associates to the left!
+
+    . easy synthax (multiple parameter List): 
+        def sum(f: Int => Int)(a: Int, b: Int): Int = 
+            if (a>b) 0 else f(a) + sum(f)(a+1, b)
+
+            . function type: Int => (Int => Int)
+
+--- Objects and Classes ---
+    . way to encapsulate data structures
+
+    e.g: 
+        class Rational(x:Int, y:Int)    <- create new Type (Rational)
+        {
+            //constructor
+            def numer = x
+            def denom = y
+
+            def add(rhs: Rational)
+            {
+                new Rational(numer * rhs.denom + rhs.numer * denom, denom * rhs.denom)
+            }
+        }
+
+    . Create Object using "new"   var obj = new Rational(1,1)
+    . You can define member functions (methods!!)
+
+    . you can add requirements to the class constructor arguments (test performed when class is initialized)
+        class Rational(x:Int, y:Int)
+        {
+            require(y != 0, "denominator must be nonzero")
+        }
+
+    . there is also the: assert(cond, "message")
+
+    -- Constructors --
+        . all classes have a "primary constructor"
+            . takes all arguments of the class and executes all of the class body
+
+        . multiple Constructors
+            def this(args) = ...
+
+    -- Evaluation --
+        . how is an instantiation of a class "new C(..) evaluated?
+            the arguments are evaluated like the the arguments of a function (CBV)
+
+        . how is following expression evaluated?
+            new C(v1, ..., vm).f(w1, ..., wm)
+            i. substitute the function arguments with their value (w1, ....)
+            ii. substitute the class arguments with their value (v1, ....)
+            iii. replace the any occurence of self reference "this" by the value of the object "new C"
+
+    -- Operators --
+        . any method with A parametere can be used like an infix operator
+
+            -> r.add(s)   >>  r add s
+
+        . operators can be used as indentifiers (use sysmbols too)  (*,+,?,%,&)
+            . we can mix alphanumeric and symbols (counter_=)
+
+            . - need to be replaced with unary_- 
+            . because ':' can also be used, you need to add a space ' '  def + : Int = 
+
+        -- Precedence Rules --
+            . precedence is determined by the FIRST CHARACTER
+            . increasing order (last is evaluated first), similar to C/Java:
+                . (all letters)
+                . |
+                . ^
+                . &
+                . < >
+                . = !
+                . :
+                . + -
+                . * / %
+                . (all other special characters)
+
+                
+
+
+
+
+
+    
+
+
+
+
+
+
+
+        
+
