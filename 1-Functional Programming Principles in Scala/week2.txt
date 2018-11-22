@@ -119,6 +119,9 @@
                 . * / %
                 . (all other special characters)
 
+    Note: Type Alias Representation
+        e.g: Type MyType = Int => Boolean
+
                 
 
 

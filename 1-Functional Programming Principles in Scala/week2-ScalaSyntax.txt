@@ -1,5 +1,7 @@
 --- Scala Syntax ---
 
+    glossary: https://docs.scala-lang.org/glossary/
+
 . grammar to express in Extended Backus-Naur form (EBNF);
     |       -> alternative
     [...]   -> an optional element (0 or 1)
@@ -53,6 +55,9 @@
     A parameter can be:
         . call-by-value parameter: (x: Int) (C++ by value)
         . call-by-name parameter: (y: => Double) (C++ by reference)
+
+--- Writting Tests ---
+    http://doc.scalatest.org/1.9.1/index.html#org.scalatest.FunSuite
 
     
 
