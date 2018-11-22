@@ -1,0 +1,153 @@
+--- Data and Abstraction --- (OOP)
+
+-- Class Hierarchy --
+
+    -- Abstract Class --
+
+    e.g:
+        abstract class IntSet
+        {
+            def incl(x: Int): IntSet
+            def contains(x: Int): Boolean
+        }
+
+    . methods can have no body if the class is abstract
+        . can contain members that are missing an implementation
+
+    . no instances of an abstract class can be created with "new"
+
+    -- Class Extensions --
+        class Empty extends IntSet
+        {
+            def contains(x: Int): Boolean = false  <- implements non-defined method (no need to write override, but doenst hurt!!)
+            ...
+
+            override def toString = "."      <- override defines existing method definition
+        }
+
+        Empty is a subclass of IntSet
+        IntSet is the superclass of Empty
+
+
+    --->>>>  NOTE: Presistant Data Structures -> structures that maintain the data of old structures when changed (by creating a new version of the changes but keeping the old stuff)
+                . class NonEmpty incl method does this as it return a new NonEmpty for the side you are including! (see worksheet week3)
+
+    -- Singleton Object --
+        .singletons of a class, use 'object' synthax
+        .cant be created ('new'), and will be created the first time it is created
+        .singleton is a value, so it is not evaluated when used
+
+        object Empty extends IntSet
+        {
+            .... new NonEmpty(x, Empty, Empty)
+        }
+
+    --- Scala Programs ---
+        . create standalone applications in Scala
+            . needs an object with the 'main' method
+
+            object Hello
+            {
+                def main(args: Array[String]) = println("hello world!")
+            }
+
+        . after program is complied, run in the cmdline with:
+            > scala Hello
+    
+    -- Dynamic Method Dispatch --
+        . the code invoked by a method call depends on the runtime type of the object that contains the method
+        . the method to be invoked cannot be known statically and needs to be lookedup dynamically (determined by the runtime value passed)
+        e.g:
+            Empty contains 1     (lookup the definition of 'contains' in the Empty class, and use this one)
+            NonEmpty contains 1 (same by not the loopup is done in the NonEmpty class, so it will invoke a different method)
+
+
+--- How Classes are Organized ---
+    . packages, imports, scala standard lib
+
+    . package -> Java package (like a namespace)
+        fully qualified name: package.object  (refer from another package)
+
+    . import package.object
+        now you can use the object withou the package
+
+        import package._   (imports everything from this package)
+
+        import package.{object1, object2}  (multiple objects)
+
+
+    . All scala programs import:
+        . package scala
+        . package java.lang
+        . all members of singleton: scala.Predef
+
+    . Scala standard lib
+        . www.scala-lang.org/api/current
+
+    . Trait
+        . Scala is single inheritanced language
+        . Use Trait to have multplice inheritanced (declare like abstract class), just like interfaces
+            . cannot have values parameters, only classes
+            . can contain fields and implementations (not only abstract methods)
+
+        e.g:
+        trait Planar
+        {
+            def hight:Int
+            def widht:Int
+        }
+
+        class Square enxtends Shape with PlanarTrait with MovableTrait
+
+    . 'Nothing' Type:
+        used to return when an error is found (abnormal termination)
+            throw Exc    -> throw new Error(msg)  
+                . aborts evaluation with Exc
+                . value of expression is 'Nothing'
+        
+        used as an element type of empty collections
+            Set[Nothing]
+
+    . 'Null' type:
+        . used for null references (for the Object types, which are scala.AnyRef...)
+        . cant be used for scala.AnyVal
+
+        scala.AnyRef and scala.AnyVal are subclasses of scala.Any
+
+
+--- Polymorphism ---
+    . type parameterization: classes and functions can have types as parameters
+    Polymorphism is a flexible way to express and parameterize types
+
+    Example: Cons-List (fundamental data-structure is LISP.)
+        . immutable linked List
+        . 2 building blocks: 
+            Nil (empty list)
+            Cons (a cell contaning and element and the remainder of the list)
+                . first element of the list and a pointer/ref to the remainder of the list
+
+
+    Note: class MyClass(val x: Int)    -> the 'val' defines at the same time the parameter x and a field of the class x
+        equivalent to: class MyClass(_x: Int) { val x = _x}
+
+    'Trait List[T]'   -> generalize the definition using a 'type parameter, [T]'  (templates!!)
+        e.g: def singleton[T](elem: T) = new Cons[T](elem, new Nil[T])
+                val s1 = singleton[Int](1)
+                val s2 = singleton[Boolean](true)
+                val s3 = singleton(true)    <- this also works because the compiler can infere the type!
+        
+        . Type parameters ([T]) do not affect evaluation in Scala 
+            . they are remmoved before evaluating a program. Types are only important for the compiler and not for the execution
+
+                -> this is called: Type Erasure
+                    . this happens in languages like Java, Scala, Haskell, OCaml
+                    . other keep the type parameter around at run time: C++, C#, F#
+
+    
+    Generics: Polymorphism using type parameters
+        . the function can be applied to arguments of many types
+        . the type can have instances of many types
+        . instances of a function or class are created by type parameterization
+
+    Subtyping: Polymorphism using class Hierarchy
+        . instances of a subclass can be passed to be a base class
