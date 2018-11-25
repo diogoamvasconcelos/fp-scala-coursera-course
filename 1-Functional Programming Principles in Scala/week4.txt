@@ -8,12 +8,140 @@
 
     
     -- Functions as Objects --
-        . function values are treated as Objects in Scala
+        . function types are treated as Objects in Scala (object with 'apply' methods)
 
             function type A => B is an abbreviation for the class scala.Function1[A, B], which is defined as:
                 trait Function1[A, B] {
-                    def apply
+                    def apply(x: A): B
                 }
+
+        . Function Values
+            e.g: anonymous functions get expanded to a function object and then a instanciation ('new') of the class
+                (x: Int) => x * x
+                - becomes
+                    { class AnonFun extends Function1[Int, Int] {
+                        def apply(x:Int) = x * x
+                        }
+                       new AnonFun
+                    }
+                - can also be written combining 'new' and 'class'
+                new Function1[Int, Int] { 
+                    def apply(x: Int) = x * x
+                }
+
+        Note: 'methods' definitions are not function values, but if used in a place where a function type is expected, it gets converted to a function value (an thus to an object)
+
+
+--- Polymorphism ---
+    Interaction between Subtyping and Generics
+
+    -- Type Bounds --
+        . motivating e.g:
+            method 'assertAllPos'
+                . takes an InsSet
+                . return the IntSet itself if all elements are positive
+                . throws expection otherwise
+            
+            .What is the best type to give 'assertAllPos'?
+                def assertAllPos[S <: IntSet](r: S): S = ...
+
+                    "<: IntSet" is an upperBound of the type parameter S
+                        . S can only be instantiated to types that conform to IntSet (like Empty and NonEmpty classes that extend IntSet)
+        
+            - S <: T  , means S is a subtype of T
+            - S >: T  , means S is a supertype of T (or T is a subtype of S)
+
+                    "[S >: NonEmpty]" this is an lower bound where S can only range on the supertypes of NonEmpty (NonEmpty, IntSet, AnyRef, Any)
+
+
+                    both bounds [S >: NonEmpty <: IntSet]  can be combined
+
+
+        . Covariance
+            . types are called 'Covariant' if their Subtyping relationship varies with the type parameter.
+                e.g: given NonEmpty <: IntSet
+                     then   List[NonEmpty] <: List[InsSet]
+                     . 'List' is a Covariant type (not all types are Covariant) 
+
+        When does a type can be a subtype of another?
+        -- Liskov Substitution Principle, LSP --
+            . if A <: B then everything one can do to with value of type B one should also be able to do with value of type A
+
+            e.g:
+                val a: Array[NonEmpty] = Array(new NonEmpty(1, Empty, Empty))
+                val b: Array[IntSet] = a    <---- type ERROR
+                    . error because in Scala, Arrays are NOT Covariant, so there is no subtype relationship
+
+                    this is done to avoid the following problem:
+                    b(0) = Empty
+                    val s: NonEmpty = a(0)    ....cabommm 
+
+
+            The type 'Array' should not be covariant because it is mutable (can update its values), so to avoid type changes it cant be covariant
+
+            The type 'List' which is immutable, can and should be covariant!!
+
+        -- Variance --
+            When can types be Covariant?
+
+            - Types of Variance -
+                . C[T] is a parameterized type and A,B are types where A <: B
+
+                Possible relationships between C[A] and C[B]
+
+                    C[A] <: C[B]       C is Covariant
+
+                    C[A] >: C[B]       C is Contravariant
+                    
+                    neither C[A] or C[B] is subtype of the other  C is Nonvariant
+
+
+            In Scala you can declare the variance!
+                class C[+A] {...}   C is Covariant
+                class C[-A] {...}   C is Contravariant
+                class C[A]  {...}   C is Nonvariant
+
+                Generalzing to Function Types
+                    if A1 <: A2 and B1 <: B2 then
+
+                    A2 => B1    <:  A1 => B2            , return is subtype but arguments are the related in the opposite direction
+
+                ->> Functions are:
+                    . Contravariant in the argument types
+                    . Covariant in the result types
+
+                    Scala Compiler will only let:
+                        . 'covariant' type (+) parameters can only appear in method results
+                        . 'contravariant' type (-) parameters can only appear in method arguments
+                        . invariant types parameters can appear anywhere 
+
+                    -> This Rules exist to prevent mutability issues, but causes some side effects where immutable operations become illegal.
+                        This is solved with upper/lower bounds
+
+                        . covariant type parameters may appear in lower bounds of method type parameters
+                            .e.g:  def prepend[U >: T] (elem: U) : List[U] = ...  (where T is List[+T])
+
+                        . contravariant type parameters may appear in upper bounds of method type parameters
+
+                
+
+
+
+
+
+
+
+
+
+
+    
+
+            
+
+
+
+
+
 
 
         
