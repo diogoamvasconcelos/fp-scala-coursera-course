@@ -1,0 +1,21 @@
+--- Types and Pattern Matching ---
+
+    -- Pure Object Orientation --
+        . every value is an Object (of a type Class)
+            . scala is a POO!! (event the primitive types are objects!) 
+            . primitive types are objects....functions are objects
+                . Compiler will replace by Java primitives, but this is an optmization
+
+    
+    -- Functions as Objects --
+        . function values are treated as Objects in Scala
+
+            function type A => B is an abbreviation for the class scala.Function1[A, B], which is defined as:
+                trait Function1[A, B] {
+                    def apply
+                }
+
+
+        
+
+        
