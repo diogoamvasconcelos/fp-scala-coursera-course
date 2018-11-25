@@ -125,6 +125,151 @@
 
                 
 
+    --- Decomposition ---
+        . running example:
+            ->> small interpreter for arithmetic expressions
+                base Trair Expr and two subclasses Number and Sum
+
+                . need to know of each expressions element their type... if it is a Number or a Sum
+
+                trait Expr
+                {
+                    //classificators
+                    def isSum: Boolean
+                    def isNumber: Boolean
+                    //accessors
+                    def numValue: Int
+                    def leftOp: Expr
+                    def rightOp: Expr
+                }
+
+                writting all of these classificators and accessor functions is TEDIUOS!!
+                    . if you want to expand the Expr subclasses with more subtypes, like Prod, Var, etc....you need to add all their functions to the base trair Expr.....=sss
+                    . quadratic increase of methods!!
+
+                Solutions:
+                    -1) Previous solution with Classification and access methods
+                        . quadratic explosion of methods
+
+                    0) Hacky....DONT USE
+                        . type test and type cast! (java isInstaceOf[T]: Boolean and asInstanceOf[T]: T])
+                        . use is discoureged!! there are better alternatives!! (not safe...hacky..done at runtime...bad desing)
+
+                    1) Object-Oriented Decomposition
+                        as all we want from and Expr is its evaluation value we could write:
+
+                        trait Expr
+                        {
+                            def eval: Int
+                        }
+
+                        class Number(n: Int) extends Expr
+                        {
+                            def eval: Int = n
+                        }
+                        ...
+
+                        . limitation: methods that envolve knowing the type (non-local methods, that envolve the multiple instances of the objects / data structure) wouldnt work as we cant have them encapsulated in the methods of a single object
+                            e.g: simplify expressions: a * b + a * c -> a * (b + c)
+
+                        . doest not always work
+                        . also to add a new method, it needs to be added to all classes individually (could be a lot of work..)
+
+
+                    2) -- Pattern Matching --
+                        . functional decomposition using pattern matching
+                        
+                        in the example:
+                            the purpose of test and accessor functions is to reverse the construction process
+                                . which subclass was used? what were the arguments of the constructor??
+
+                            . This is very common so like in many functional languages, Scala automates it!!!
+                                -> 'case' classes
+
+                            trair Expr
+                            case class Number(n: Int) extends Expr
+
+                            . the Scala compiler will add companion objects with 'apply' methods
+                            
+                                Object Number
+                                {
+                                    def apply(n: Int) = new Number(n) //factory method for the ()
+                                }
+
+                                so you can write Number(1) instead o 'new Number(1)' -> synthax convience
+
+                            ->> Patter Matching is a generalization of the C 'switch'
+
+                                def eval(e: Expr): Int = e match
+                                {
+                                    case Number(n) => n                      //pattern 
+                                    case Sum(e1, e2) => eval(e1) + eval(e2)  //other pattern
+                                }
+
+                                . first pattern that matches will be used
+                                . if no matching pattern, exception is thrown
+
+                                - Patterns:
+                                    . constructors, eg: Number, Sum
+                                    . variables, e.g: n, e1  (must always begin with lower case)
+                                    . wildcard patterns _
+                                    . constants, e.g: 1, true , n (if N is a val, thus a constant..constants should begin with Capital letter)
+
+                                    complex pattern example: Sum( Number(1), Var(X)) => .....
+
+                                    subtypes of a type in a 'case' can also be matched
+
+
+    --- Collections - Immutable Collections ---
+
+        -- Lists --
+            . are immutable
+            . are recursvie (while arrays are flat)
+
+        -the scala std lib Lists implementation is very similar to the one done in week 3 (but with more functionality)
+
+        -lists can be contructed as:
+            empty list (Nil) and the construction operator :: (new_head :: curr_list)
+            e.g: nums = 1 :: (2 :: (3 :: Nill))  
+                because operators ending with ":" associate to the right no need to use the parenthisis!
+                also, they are seen as method calls of the right-hand operand (where the default is to the left-hand operand)
+
+        -all operations on lists can be expressed in terms of these 3 operations: head, tail, isEmpty
+
+        -possible to decompose lists with pattern matching
+            .eg:
+                1::2::xs  will match lists that start with 1 and then 2
+
+        
+
+
+
+            
+
+
+
+
+
+
+                                
+
+
+
+
+
+
+                            
+
+                        
+
+                    
+
+                    
+
+                    
+
+
+
 
 
 
