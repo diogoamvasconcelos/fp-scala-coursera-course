@@ -240,6 +240,10 @@
             .eg:
                 1::2::xs  will match lists that start with 1 and then 2
 
+            - append List to List -> :::
+                ws = ys ::: xs
+
+
         
 
 
