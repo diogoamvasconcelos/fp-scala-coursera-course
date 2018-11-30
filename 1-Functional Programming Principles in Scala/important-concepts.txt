@@ -1,0 +1,15 @@
+-> Tail Recursion
+
+-> List (immutable)
+
+-> Pattern matching
+
+-> List Functions
+    . basic: head, tail, isEmpty
+    . first order (all made using head, tail, isEmpty): last, reverse, indexOf, ....
+    . higher order: map, filter, reduce/fold
+
+        - use map, filter, reduce for EVERYTHING!!! (very powerfull)
+
+-> Synthax tricks/sugar
+    ((x, y) => x + y)   -> (_ + _)

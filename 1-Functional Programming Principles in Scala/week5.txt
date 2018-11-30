@@ -1,0 +1,234 @@
+--- Lists ---
+    . continuation of Lists
+
+     -List Methods -
+        . xs.head
+        . xs.tail       , all except head
+        . xs.isEmpty
+        . xs.length
+        . xs.last       , last element, exception if empty
+        . xs.init       , list of all elements except the last one (exception if empty)
+        . xs take n     , list of first 'n' elements of xs (or xs itself if length < n)
+        . xs drop n     , list of remainder elements after taking 'n' elements
+        . xs(n)         , (or xs apply n) the element of xs at index 'n'
+        . xs splitAt n : (fsn, snd) , return pair of 2 lists, first-hand-side and second-hand-side split at the 'n' element
+
+        - create list:
+        . xs ++ ys      , list of all elements of xs followed by all elements of ys  (concat, :::)
+        . x :: xs       , concanate x elemtn to xs (as its new head)
+        . xs ::: x     , add x to xs at the end (as its new tail) (same concat)
+        . xs.reverse    , elements of xs in reversed order
+        . xs update (n, x) , list containg the same elements as xs, except at index 'n' where it now contains the new element 'x'
+
+        - finding elements:
+        . xs indexOf x  , the index of the first element in xs equal to x (or -1 if not found)
+        . xs contains x , same as xs indexOf x >= 0
+
+
+    . Implementation of these methods:
+        head -> contant time (O(1)), very simple lookup
+        :: -> O(1) as well
+        
+        last -> def last(xs: List) = xs match 
+                    case List() => throw error (empty list)
+                    case List(x) => xs   (single element)
+                    case y :: ys => last(ys)  (2+ element list)
+
+                . O(n) linear complexity
+
+        init -> def init(xs: List) = xs match
+                    case List() => throw error
+                    case List(x) => List() 
+                    case y :: ys => y :: init(ys)
+
+                . O(n) complexity (analogous to 'last')
+
+        concat(xs: List, ys: List): List = xs match
+                case List() => ys
+                case z :: zs => z :: concat(zs, ys)
+
+                . O(n) complexity (n = size of xs)
+
+        reverse(xs: List): List = xs match
+            case List() => xs
+            case y :: ys => reverse(ys) ::: y
+
+            . O(n^2) complexity,   because ::: is O(n) itself
+                . can it be improved?? (yes!!)
+                . using foldLeft it can be O(n)!!
+
+
+    . Combining the methods to create other methods:
+        def removeAt(n: Int, xs: List): List = (xs take n) ::: (xs drop n+1)
+
+
+--- Pais and Tuples ---
+
+    val pair = ("answer", 42)    results in pair: (String, Int) = (answer, 42)
+
+    . pairs can be used as patterns:
+        e.g: val (label, value) = pair      results: label: String = answer and value: Int = 42
+
+    . Works for tuples with more than 2 elements as well!!!  (pair is a tuple of 2 elements)
+
+    . access fields with ._1, ._2, etc....
+
+    . example task: Merge Sort!
+        def msort(xs: List): List = 
+        {
+            val n = xs.length / 2
+            if (n == 0) xs
+            else
+            {
+                def merge(xs:List, ys:List) = ???
+
+                val (fsd, snd) = xs splitAt n
+                merge(msort(fds, msort(snd)))
+            }
+        }
+
+            possible implentation of merge
+                def merge (xs: List, ys: List): List = xs match
+                {
+                    case Nil => ys
+                    case x :: xs1 => ys match
+                    {
+                        case Nil => xs
+                        case y :: ys1 => 
+                            if (x < y) x :: merge(xs1, ys)
+                            else y :: merge(xs, ys1)
+                    }
+                }
+
+            better implemention without the nested pattern matching (use pattern matching over pairs)
+                def merge (xs: List, ys: List): List = (xs, ys) match
+                {
+                    case (Nil, Nil) => Nil
+                    case (Nil, ys) => ys
+                    case (xs, Nil) => xs
+                    case (x :: xs1, y :: ys1) => 
+                        if (x < y) x :: merge(xs1, ys)
+                        else y :: merge(xs, ys1)
+                }
+
+
+            
+-- Implicit Argument Parameterization --
+    . parameterize "merge" to use other data types then Int
+        . pass a "compare function" as an argument
+
+            def msort[T](xs: List[T])(lt: (T, T) => Boolean): List[T] = ... if (lt(x, y)) ,,,
+            msort(nums)((x: Int, y: Int) => x < y)
+
+        . or use the already defined class in the standard lib for ordering:
+            scala.math.Ordering[T]
+
+            def msort[T](xs: List[T])(ord: Ordering): List[T] = ... if (ord.lt(x, t)) ...
+            msort(nums)(Ordering.Int)
+
+    . Would be nicer to be avoid passing the compare function in the first place....
+        ->> make "ord" and implicit parameter  (like default value in C++)
+
+            def msort[T](xs: List[T])(implicit ord: Ordering): List[T] = ... if (ord.lt(x, t)) ...  <- Compiler will figure out the correct type of Ordering for T
+            msort(nums)
+
+        . Compiler will figure out the right implicit to pass based on the demanded type T
+
+            - Rules of Implicit Parameters -
+                if a function takes an implicit parameter of type T
+                , the compiler will seach an implicit definition that:
+
+                i. is marked implicit
+                ii. has type compatible with T
+                iii. is visible to the point of the function call or is defined in a companion object associated with T
+
+                - If there is a single (most specific) definition, that will be used, otherwise ERROR
+
+        
+-- Higher Order List Functions --
+    . Work on lists and take another Function as arguments
+        e.g: using generic functions to implement the following patterns:
+            
+            
+            ->> Map: transform each element in a list in a certain way
+                def map[U](f: T => U): List[U] = this match
+                {
+                    case Nil => this
+                    case x :: xs => f(x) :: xs.map(f)
+                }
+
+                def scaleList(xs: List[Double], factor: Double) = xs map(x => x * factor)
+            
+            ->> Filtering: retieve a list of all elements that satisfy a certain criterion
+                def filter[T](p: T => Boolean): List[T] = this match
+                {
+                    case Nil => this
+                    case x :: xs => if (p(x)) x :: xs.filter(f) else xs.filter(f)
+                }
+
+                def posElems(xsL List[Int]): List[Int] = xs filter(x => x < 0)
+
+                other similar methods:
+                    - xs filterNot p        , inverse of filter, if (!p(x)) ....
+                    - xs partition p        , same as (xs filter p, xs filterNot p), but computed in a single traversal of the list xs
+                    - xs takeWhile p        , the longest prefix of xs consisting of elements that all satisfy the predicate pair
+                        e.g: List(2, -1, 3)  list takeWhile (x => x > 0)   returns List(2)   (collects the longest PREFIX untill element with P is found!!)
+                    - xs dropWhile p        , the remainder of the list xs after any leading element satisfying p have been removed. Oposite of takeWhile
+                    - xs span p             , same as (xs takeWhile p, xs dropWhile p), but single traversal algorithm
+            
+            
+            ->> Reduce (Fold) : Combine the elements of a list using a given operator (like sum of all elements)
+
+                List(x1, ..., xs) reduceLeft op    (make sure to start the list with its unit value)
+
+                def reduceLeft[T](op: (T, T) => T): T = this match
+                {
+                    case Nil => throw new Error("Nil.reduceLeft")
+                    case x :: xs => (xs foldLeft x)(op)
+                }
+
+                def sum(xs: List[Int]) = (0 :: xs) reduceLeft ((x, y) => x + y)
+                def prod(xs: List[Int]) = (1 :: xs) reduceLeft ((x, y) => x * y)
+
+
+                NOTE: instead of ((x, y) => x + y)  , you can use just (_ + _) (synthax sugar!!!)
+                    . each '_' represents a new parameter, from left to right
+
+                . reduceLeft -> can only be applied to non-empty lists
+                    . the more general version is : foldLeft
+
+
+                - foldLeft -> similar to reduceLeft but takes an extra argument, the "initial value (zero element - z) "
+                    def foldLeft[T](z: U)(op: (U, T) => U): U = this match
+                    {
+                        case Nil => z
+                        case x :: xs => (xs foldLeft op(z, x))(op)  //a bit more complicated...
+                    }
+
+                    def sum(xs: List[Int]) = (xs foldLeft 0) (_ + _)
+                    def prod(xs: List[Int]) = (xs foldLeft 1) (_ * _)
+
+                - the "right side" versions: reduceRight and foldRight are very similar but accumulate from the tail to the head (right to the left)
+
+                    def reduceRight[T](op: (T, T) => T): T = this match
+                    {
+                        case Nil => throw new Error("Nil.reduceRight")
+                        case x :: xs => op(x, xs.reduceRight(op))
+                    }
+
+                    def foldRight[T](z: U)(op: (U, T) => U): U = this match
+                    {
+                        case Nil => z
+                        case x :: xs => op(x, (xs foldRight z)(op))
+                    }
+                
+                Note: if the operator is associative and commuatative, (+, *) foldLeft and foldRight are equivalent (but might be differnt in effeciency)!
+                    e.g:
+                        def concat[T](xs: List[T], ys: List[T]): List[T] = 
+                            (xs foldRight ys) (_ :: _)
+
+                        -this dont work if we use foldLeft!
+                            . types wouldnt work out (see lecture for explanation...., basically we try to apply a :: b where b is not a list)
+
+
+

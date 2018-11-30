@@ -1,0 +1,87 @@
+claim: FP is more managable to reason about programs  -> Easy to prove mathematical Equational Proofs!!
+
+- How to verify/prove if Concat respects the following rules:
+    . is associative
+    . that is admits the Nil as neutral element to the left and to the right
+
+    -- Structural Induction --
+        . proof principle
+
+        . reminder about "natural induction" (for natural numbers, where n >= b)
+            i. Show base case P(b) (propery of 'b')
+            ii. for al integers n >= b show the induction step
+                if P(n) then P(n+1) i also hold true
+
+                e.g: 
+                    factorial(n) >= 2^n
+
+                    . base case, b = 4:    factorial(4) >= 2^4   ---> 24 >= 16 (true)
+                    . induction step, n+1: (n+1) * factorial(n)  ->   2 * factorial(n) 
+                        so then: 2 * factorial(n) => 2 * 2^n
+                          e.g: if factorial(4) => 2^4   then 2 * factorial(4) => 2 * 2^4   hold true!!
+
+              . We can use these equalities (lhs >= rhs) because Pure Functional Programs dont have side effects, so reducing those 2 terms is "clean" and the same as rewritting them
+                    -> Principle of "Referential Transparency"
+                        . important tool for equational proof in FP
+
+
+                
+        - Structural Induction Method -
+            . similar to natural induction
+            . prove a propery P(xs) for all lists xs
+
+                i. show that P(Nil) holds   <-  base case
+                ii. for a list xs and som element x, show the induction step
+                    if P(xs) holds then P(x::xs) also holds
+
+
+                e.g: associativeness of concat
+                    (xs ++ ys) ++ zs = xs ++ (ys ++ zs)
+
+                    .imple of concat:    def concat(xs:List, ys:List):List = xs match
+                                            case Nil => ys
+                                            case x :: xs1 => x :: concat(xs1, ys)
+
+                    .clauses derived from the implementation
+                        Nill ++ ys = ys         //1st clause
+                        (x :: xs1) ++ ys = x :: (xs1 ++ ys)  //2nd clause
+
+
+                    .base case: Nil
+                        lhs: (Nil ++ ys) ++ zs
+                            = ys ++ zs  // can be simplified by this using the 1st clause, Nill ++ ys = ys
+
+                        rhs: Nil ++ (ys ++ zs)
+                            = ys ++ zs  // same
+
+                            -> proven, holds
+
+                    .indiction step: x :: xs
+                        lhs ((x :: xs) ++ ys) ++ zs
+                            = (x :: (xs ++ ys)) ++ zs   //simplified by the 2nd clause
+                            = x :: ((xs ++ ys)) ++ zs)   //simplified by the 2nd clause again
+                            = x :: (xs ++ (ys ++ zs))   //by invoking the induction hypothesis of associativeness itself: (xs ++ ys) ++ zs = xs ++ (ys ++ zs)
+
+                        rhs (x :: xs) ++ (ys ++ zs)
+                            = x :: (xs ++ (ys ++ zs))   //simplified by the 2nd clause, and is already the induction hypothesis of associativeness and has the same value as lhs
+
+
+                            -> HOLDS!!
+
+                     e.g2: xs ++ Nil = xs
+                            base case: Nil ++ Nil = Nil
+                                        = Nil  //1st cause
+
+                            induction step: (x :: xs) ++ Nil = (x :: xs)
+                                            = x :: (xs ++ Nil) = x :: xs //simplified using 2nd clause
+                                            =  x :: xs = x :: xs //simplified using base case
+
+                    
+                -> For more complex mathematical proofs, it is used the Fold/Unfold method to prof equivalance (google this..lol)
+
+
+
+
+
+
+

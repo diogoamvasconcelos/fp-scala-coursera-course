@@ -219,6 +219,8 @@
 
                                     subtypes of a type in a 'case' can also be matched
 
+                                    Note: case _ => matches alll
+
 
     --- Collections - Immutable Collections ---
 
@@ -239,6 +241,7 @@
         -possible to decompose lists with pattern matching
             .eg:
                 1::2::xs  will match lists that start with 1 and then 2
+                
 
         
 
