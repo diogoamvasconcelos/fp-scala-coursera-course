@@ -13,3 +13,10 @@
 
 -> Synthax tricks/sugar
     ((x, y) => x + y)   -> (_ + _)
+
+-> Sequence Collections
+    . vector, range, etc..
+    . its operations (the whole list, map, flatMap, head, filter, exists, takeWhile, zip, etc...)
+
+    
+    

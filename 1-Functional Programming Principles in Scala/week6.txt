@@ -1,0 +1,81 @@
+--- Collections ---
+
+    . there are other collectins than List, some with different functionality or different performance
+
+        -> All are IMMUTABLE!
+
+    -- Sequencial Collections --
+        . List:  linear sequence, linked list, where access to first element is O(1) and rest is O(n). Access pattern is not even
+
+            . Bad random access times
+            . Bad memory locality as not garanteed to have elements placed all together in memory -> could cache miss
+            . As they are implemented based on a head-tail recursive structure
+                -> Very nice for operations that follow this logic, as we get great performance if we are only accessing the head (always O(1))
+
+        . Vector: evenly balanced access patterns
+            -> represented as "very shallow" trees
+                . vector up to 32 elements is just an array (accessed by offset)
+                . > 32 elements:
+                    tree of 32 pointers to arrays of 32 elements  == 32*23 = 1024 elements
+                . > 1024 elements, new tree expansion, pointer to pointers to arrays, 32*32*32 = 32k
+                . and so one
+
+            access time: dependante on the depth of the vector. O(1) for vector < 32, otherwise O(2) (array pointer lookup, and array element lookup) and so on , log_32_N  (grows very slowlly)
+
+            . Much better random access time than Lists
+            . Good for batch operations (map, fold, filter operations), batched to 32 elements which has much better cache locallity
+
+            
+            . creating/defining: val nums = Vector(1, 2, 3, 4)
+
+            . operations: same as lists (head, tail, map, ...), except '::'. instead:
+                -  x +: xs  , create new vector with leading element x followed by all elements of xs
+
+                - xs :+ x   , create new vector with tailing element x, proceded by all elements of xs
+
+                (note, ':' always points to the sequence)
+
+            . insertion:
+                to add a new element to the 32 element array, we need to create a new one (cant change the current one), and thus also change all the 32 pointer arrays that pointed to the old array so they now point to the one, (but keep pointing to the other 31 untouched element arrays) and so one, cascading all the way up to the top of tree.
+
+                    - complexity: log_32_N    (object creations)
+
+
+        . Seq: base class of 'List' and 'Vector'
+            . 'Seq' is a subclass of 'Iterable'
+                . other subclasses of Iterable: Sets and Maps
+
+
+        . Array and String: support same operations as 'Seq' and can be IMPLICITLY converted to sequences when needed
+            . CANNOT be subclasses of 'Seq' because they come from the Java libs
+
+            e.g: val xs: Array[Int] = Array(1, 2, 3)
+                xs map (x => 2 * x)    -> works
+        
+        . Range: represents sequence of evenly spaced integers (also subclass of Seq)
+
+            . operators, to represent its 3 fields: lower bound, upper bound and step value
+                - to        , inclusive
+                - until     , exclusive
+                - by        , determine step value (could be negative)
+
+            e.g:    val r: Range = 1 until 5
+                    val s: Range = 2 to 10 by 2 
+
+
+                . this object only stores the three fields (bounds and step) and not all the values (when evaluated they get computed inplace)
+
+
+        ->> More Sequence Operations:
+            xs exists p             , true if there is an element x of xs that p(x) holds
+            xs forall p             , true if p(x) holds for all elements of xs
+            xs zip ys               , sequence of pairs drawn from corresponding elements of xs and ys (nice!)
+            xs.unzip                . splits sequence of pais xs into 2 sequences (all ._1 and all ._2)
+            xs flatMap fields       . applies collection-valued fuction 'f' to all elements of xs and concatenates the result (f maps x to a new collection itself, thus the concatenation step afterwords)
+            xs.sum                  . sum of all elements of a numeric collection
+            xs.product              . prod of all ....
+            xs.max                  . maximum of all elements (an 'Ordering' must exist as implicit argument)
+            xs.min                  . minimum ....
+
+
+
