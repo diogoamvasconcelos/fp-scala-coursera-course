@@ -65,7 +65,6 @@
 
                 . this object only stores the three fields (bounds and step) and not all the values (when evaluated they get computed inplace)
 
-
         ->> More Sequence Operations:
             xs exists p             , true if there is an element x of xs that p(x) holds
             xs forall p             , true if p(x) holds for all elements of xs
@@ -76,6 +75,190 @@
             xs.product              . prod of all ....
             xs.max                  . maximum of all elements (an 'Ordering' must exist as implicit argument)
             xs.min                  . minimum ....
+
+
+        
+
+
+--- Nested Sequences ---
+    . Combinatorial Search Problems!
+
+    . High order functions on sequences usually replace the "nested loops" from imperative languages
+        . Nested loops can be expressed as combinations of high order functions
+
+            -> Generate the nested loop data (if a matrix, where we loop the i, and then for each i_val iterate over j, use 'ranges' to crate all the pairs (i, j))
+                e.g: generate all pairs of integrers (i, j) that 1 <= j < i < n
+                    (1 until n) map (i => 
+                        (1 until i) map (j => (i, j)) 
+
+                        . this results in a Vector of Vectors of Pairs
+                            -> use xss.flatten to make it just a Vector of Pairs (which just does (xss foldRight Seq[Int]())(_ ++ _))
+
+                            -> or use a flatMap =    xs flatMap f = (xs map f).flatten
+
+                                (1 until n) flatMap (i => 
+                                    (1 until i) map (j => (i, j))
+
+            -> Filter the generated nested loop data with 'filter'
+
+
+
+        -- Alternative - USE For-Expressions --
+            . same implementation/behavious as the above, but abstracted with simple notation/synthax
+            . similar to "for-loops" of imperative languages but there are NOT side effects here. It builds a new result every iteration
+
+            e.g: get all names of person over 20 yeas
+                for (p <- persons if p.age > 20) yield p.names
+
+                    this is equivalent to:
+                
+                persons filter (p => p.age > 20) map (p => p.name)
+
+
+            - Syntax:   for  ( s ) yield  e 
+                . 's' is a sequence of generators and filters
+                    -> generator: 'p <- e'
+                        - p: pattern
+                        - e: expression whose value is an collection
+                    -> filter: 'if f'
+                        - f: boolean expression, what filters out elements where 'f' is false
+
+                    sequence must start with a generator
+                    generators can be chained, and the last generators vary (are iterated) more than the first
+
+                . 'e' is an expression whose value is returned by an iteration
+
+
+                e.g: IsPrimeFilter using for-expression (very clear function, easy to read behaviour, less convoluted):
+                    for {
+                        i <- 1 until n
+                        j <- 1 until i
+                        if (isPrime(i+j))
+                    } yield (i, j)
+
+        
+--- Set Collection ---
+    . subclass of Iterable. Not a 'Seq'
+
+    . very similar to sequences
+        . toSet converts sequence to Set
+        . most operations on Seq are available for Set too
+            (filter, map, nonEmpty.)  -> see Iterables and Set in Scaladoc for list of all supported operations!
+                e.g: s map (_ + 2)   //Set(3,4,5,..)
+
+    . differences, Seq vs Set
+        1. Sets are unordered. no predefined order
+
+        2. Sets do not duplicate elements
+
+        3. fundamental operation on Sets is: 'contains'
+            s contains 5   // true
+
+        
+--- Combining Sets and For-Exps in a more complex Combinatorial Search Problem ---
+    . Problem: N-Queens
+        . place N queens in a chessboard so that no queen is threatened by another
+            . cant place queens in the same row or column or diagonal!
+
+
+        . Recusive Algorithm
+            . idea: place each queen in a different row and then try to make sure their columns dont match (are all different) and not diagonal
+            
+            i. generate all solutions consisting of placing k-1 queens on a board of size n
+                - each solution is represented by a list (length k-1) containing the numbers of columns (between 0 and n-1)
+                - the column number of the queen in the k-1th (the last placed one so far) row comes first on the list, followed by the k-2, etc
+            ii. the solution set is the set of these list 
+            iii. now to place the 'kth' queen, we generate all possible extensions of each solution preceded by a new queen
+
+            See worksheet "week6-nqueens" for the implementation
+
+
+
+--- Map - Associative Collections ---
+    . type Map[Key, Value] associates keys of type Key with values of type Value
+        e.g: val romanNumerals = map("I" -> 1, "V" -> 5, "X" -> 10)
+
+    . both subclass of 'Iterable' but also a Function itself, as it extends the function type 'Key => Value'
+        e.g: romanNumerals("I")    // 1
+
+            can be used anywhere functions can be used
+
+    . methods:
+        . xmap get xkey   , queryx map if it contains the xkey or not 
+                            returns 'Option' type
+                                . None , if nothing was found
+                                . Some(value) , if found the key asked and it returns its value
+
+
+                            note: quick def of Type 'Option' from the Scala lib
+                                trait Option[+A]
+                                case class Some[+A](value: A) extends Option[A]
+                                object None extends Option[Nothing]
+
+                            
+                -> as option is a "case" class, it can be decomposed using pattern matching
+
+                    e.g: def showCapital(country: String) = capitalOfContry.get(country) match
+                    {
+                        case Some(capital) => capital
+                        case None => "missing capital data"
+                    }
+
+        . ms updated (k, v)     , updated the value of k with v. same as; ms + ( k -> v)
+
+    EXTRA: SQL queries like operations for Lists: groupBy and orderBy (sort)
+
+            . 'orderBy' can be expressed in Scala with 'sortWith' and 'sorted'
+                e.g:    val fruit = List("apple", "pear", "orange")
+                        
+                        fruit sortWith (_.length < _.length)   //List("pear", "apple", "orange") //sort fruits on name length
+                        
+                        fruit.sorted   List("apple", "orange", "pear") //sort the list naturally , alphabetically
+
+
+            . 'groupBy' is available in Scala collections, grouping into a MAP of collections according to a discriminator function 'v'
+                e.g:    fruit groupBy (_.head)          // Map (p -> List(pear, pineaple), a -> List(apple), ...
+
+
+    . map Example:
+        problem: map polinomials, x^3 - 2x + 5 == Map(0 -> 5, 1 -> 2, 2 -> 0, 3 -> 1)
+        . desing class Polynom that represents polinomials as maps and make the addition operator
+            check worksheet
+
+
+    - Map Default Values -
+        . vanila Maps are partial functions. Applying a map to a key value could lead to an exception if value was not previously stored in map
+
+        . 'withDefaultValue' turn Map into total function
+            val cap1 = capitalOfContry withDefaultValue "<unknown>"
+                cap1("Andorra")   //"<unknown>"
+
+
+    -- How to pass a variable number of arguments to function --
+        - '*' makes the argument a list of repeated arguments of the same type
+        e.g: def this(bindings: (Int, Double)*) = this(bindings.toMap)      //secondary constructor for def Poly(terms: Map[int, Double])
+
+    
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,0 +1,24 @@
+--- Putting all the week 5 and 6 information about collections in use to solve a bigger task ---
+
+    -- Task --
+        phone keys have mnemocis assigned to them: 2 -> "ABC", etc
+        desing method translate(phoneNumber) that produces all phrases of words that can serve as mnemocis for the phone number
+
+            e.g: "7225247386" -> "scala is fun" as one element of the solutions set
+
+        - >>> see worksheet <<< -
+
+
+--- COURSE-CONCLUSION ---
+ 
+    Traits of Scala and FP:
+        - highe-order cunctions
+        - case classes and pattern matching
+        - immmutable collections
+        - absence of mutable state
+        - flexible evaluation strategies: strict vs by name
+
+    . useful toolkit for every programmer
+    . different way of thinking about programs
+
+    ->> was nice!

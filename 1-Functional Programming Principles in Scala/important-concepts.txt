@@ -18,5 +18,37 @@
     . vector, range, etc..
     . its operations (the whole list, map, flatMap, head, filter, exists, takeWhile, zip, etc...)
 
+
+-> Combinatorial Search
+    . nested loops data expressed as using ranges, map and flatten, flatMap
+    . filter on the data with filer
+
+    -> Or use For-Expressions (same implementation as above, but abstraced with simple Synthax)
+        for (p <- persons if p.age > 20) yield p.names
+            this is equivalent to:
+        persons filter (p => p.age > 20) map (p => p.name)   
+
+-> Maps
+    Map Default Values (very nice)
+
+-> Variable number of arguments -> arguments Sequence -> (*)      
+
+Scala syntactic constructions cheat sheet
+https://docs.scala-lang.org/cheatsheets/
+
+
+-> Scala's Immutable collections are very attractive for Software Development because:
+    easy to use: easy to combine functions to create very powerful high order functions 
+    consice: one word replaces a whole loops
+    safe: type checker is good for static analysis (catch error in compilation and not at run time)
+    fast: collection operations are tuned/optimized in the lib and can be parallelized
+    universal: one API/vocabulary to work on all kinds of collections
+
+
+                
+                
+
+
+
     
     

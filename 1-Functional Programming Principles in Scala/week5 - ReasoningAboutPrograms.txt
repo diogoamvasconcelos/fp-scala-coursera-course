@@ -77,7 +77,7 @@ claim: FP is more managable to reason about programs  -> Easy to prove mathemati
                                             =  x :: xs = x :: xs //simplified using base case
 
                     
-                -> For more complex mathematical proofs, it is used the Fold/Unfold method to prof equivalance (google this..lol)
+                -> For more complex mathematical proofs, it is used the Unfold/Fold method to prof equivalance (google this..lol)
 
 
 
