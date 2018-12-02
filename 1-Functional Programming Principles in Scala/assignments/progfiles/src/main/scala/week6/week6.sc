@@ -49,3 +49,10 @@ def isPrime2(n: Int): Boolean =
 
 isPrime2(5)
 isPrime2(6)
+
+
+//for expression for dot_prod
+def dot_prod_forex(xs: List[Double], ys: List[Double]): Double =
+{
+    (for { (x, y) <- xs zip ys } yield (x * y)).sum
+}

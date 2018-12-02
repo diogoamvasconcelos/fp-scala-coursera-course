@@ -136,6 +136,6 @@ def lengthFun[T](xs: List[T]): Int =
 lengthFun(concat(fruits, to_pack_list))
 
 def lengthFun2[T](xs: List[T]): Int =
-    (xs foldRight 0)(((z:T) => 0)(_) + _ + 1) //probably there is another way...lol
+    (xs foldRight 0)((_, acc) => acc + 1) //probably there is another way...lol
 
 lengthFun2(concat(fruits, to_pack_list))
