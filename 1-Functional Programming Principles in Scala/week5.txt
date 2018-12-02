@@ -231,4 +231,7 @@
                             . types wouldnt work out (see lecture for explanation...., basically we try to apply a :: b where b is not a list)
 
 
+                    ->> Diff right to left  https://commitlogs.com/2016/09/10/scala-fold-foldleft-and-foldright/
+                        def len(list: List): Int = list foldLeft(0) ((count, _) => count + 1)  // accumulator is on the left. apply function to next element and add to preceding result
 
+                        def len(list: List): Int = list foldRight(0) ((_, count) => count + 1)   // accumulator is on the right. apply function to prev element and add to succeding result (start from end)
