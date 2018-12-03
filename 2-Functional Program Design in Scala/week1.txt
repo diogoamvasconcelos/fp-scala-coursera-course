@@ -1,0 +1,89 @@
+--- For Expressions and Monads ---
+
+
+-- Recap --
+    - Case Class adn Pattern Matching -
+        . Scala's preferred way to define complex data
+        . nice for pattern matching =D
+            e.g:
+                JSON class:
+                    abstact class JSON  
+                    case class JSeq (elems: List[JSON])   extends JSON
+                    case class JNum (num: Double)   extends JSON
+                    case class JNul     extends JSON
+                    ...
+
+                def show(json: JSON): String = json match
+                {
+                    case JSeq(elems) => "[" + (elems map show mkString(", ")) + "]"
+                    case JNum(num) => num.toString
+                    case JNul => "null"
+                }
+
+    - Functions Are Objects -
+        . every concrete type is the type of some class or trait, even Functions
+        . function is of type scala.Function1 (which is a trait)
+            trait Function1[-A, +R]
+            {
+                def applu(x: A): R
+            }
+
+            +. covariante  (subtypes work too)  (can only be used for return types)
+            -. contravariante (supertypes work too) (can only be used for argument types)
+
+        . we can subclass (extend) a function type!
+            .e.g: maps are function from keys to values
+                trait Map[Key, Value] extends (Key => Value)...
+                
+                trait Seq[Elem] extends Int => Elem
+                    . this is why we can write elems(i) for sequence/array indexing 
+
+
+    - Partial Matching -
+        . define case blocks functions with case matching
+            val f: String => String = { case "ping" => "pong" }
+
+            f("ping") //pong
+            f("abc")  //error, no matching case!!
+
+        . Solve this problem using Partial Functions
+
+        val f: PartialFunction[String, String] = { case "ping" => "pong" }
+        f.isDefinedAt("ping")  //true
+        f.isDefinedAt("abc")  //false
+
+
+        - Advanced: For-Expression and Patern Matching -
+            . matching on the leftside of the for-Expression generator.  <- this acts as an implicit filter!
+
+            e.g: get names of phonenumbers starting with 121
+
+                val data: List[JSON] = ...
+                for {
+                    JObj(bindings) <- data   //select only the elements of data that are Objs and match the JObj(bindings)
+                    JSeq(phones) = bindings("phoneNumbers") //pattern match for JSeq
+                    JObj(phone) <- phones //pattern match for JObj
+                    JStr(digits) = phone("number) //pattern match for JStr
+                    if digits startWith("212") 
+                } yield (bindings("firstName"), bindings("lastName"))
+
+
+
+
+
+        
+
+        
+
+
+
+
+
+
+
+
+
+
+
+                
+
