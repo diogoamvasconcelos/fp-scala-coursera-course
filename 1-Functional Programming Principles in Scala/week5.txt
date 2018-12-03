@@ -168,13 +168,14 @@
 
                 def posElems(xsL List[Int]): List[Int] = xs filter(x => x < 0)
 
-                other similar methods:
-                    - xs filterNot p        , inverse of filter, if (!p(x)) ....
-                    - xs partition p        , same as (xs filter p, xs filterNot p), but computed in a single traversal of the list xs
-                    - xs takeWhile p        , the longest prefix of xs consisting of elements that all satisfy the predicate pair
-                        e.g: List(2, -1, 3)  list takeWhile (x => x > 0)   returns List(2)   (collects the longest PREFIX untill element with P is found!!)
-                    - xs dropWhile p        , the remainder of the list xs after any leading element satisfying p have been removed. Oposite of takeWhile
-                    - xs span p             , same as (xs takeWhile p, xs dropWhile p), but single traversal algorithm
+            other similar methods:
+            
+                - xs filterNot p        , inverse of filter, if (!p(x)) ....
+                - xs partition p        , same as (xs filter p, xs filterNot p), but computed in a single traversal of the list xs
+                - xs takeWhile p        , the longest prefix of xs consisting of elements that all satisfy the predicate pair
+                    e.g: List(2, -1, 3)  list takeWhile (x => x > 0)   returns List(2)   (collects the longest PREFIX untill element with P is found!!)
+                - xs dropWhile p        , the remainder of the list xs after any leading element satisfying p have been removed. Oposite of takeWhile
+                - xs span p             , same as (xs takeWhile p, xs dropWhile p), but single traversal algorithm
             
             
             ->> Reduce (Fold) : Combine the elements of a list using a given operator (like sum of all elements)

@@ -41,7 +41,7 @@ https://docs.scala-lang.org/cheatsheets/
     easy to use: easy to combine functions to create very powerful high order functions 
     consice: one word replaces a whole loops
     safe: type checker is good for static analysis (catch error in compilation and not at run time)
-    fast: collection operations are tuned/optimized in the lib and can be parallelized
+    fast: collection operations are tuned/optimized in the std::scala::lib and can be parallelized
     universal: one API/vocabulary to work on all kinds of collections
 
 

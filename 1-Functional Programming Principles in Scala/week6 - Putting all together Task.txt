@@ -12,7 +12,7 @@
 --- COURSE-CONCLUSION ---
  
     Traits of Scala and FP:
-        - highe-order cunctions
+        - higher-order functions
         - case classes and pattern matching
         - immmutable collections
         - absence of mutable state
