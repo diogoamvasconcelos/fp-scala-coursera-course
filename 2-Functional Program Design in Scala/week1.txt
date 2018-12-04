@@ -25,7 +25,7 @@
         . function is of type scala.Function1 (which is a trait)
             trait Function1[-A, +R]
             {
-                def applu(x: A): R
+                def apply(x: A): R
             }
 
             +. covariante  (subtypes work too)  (can only be used for return types)
@@ -66,6 +66,206 @@
                     JStr(digits) = phone("number) //pattern match for JStr
                     if digits startWith("212") 
                 } yield (bindings("firstName"), bindings("lastName"))
+
+----------------------------------------------------------------------------------------------------
+
+--- Queries with For ---
+    . For-Expressions are somewhat similar to a query language
+    . Relationship between For-Expressions and Database Queries
+
+    Example: 
+        books database, represented as a list of books
+
+        case class Book(title: String, authors: List[String])
+
+        query #1: Find the title of books whose authors name is Bird:
+            for (b <- books; a <- b.authors if a startsWith "Birds,")
+            yield b.title
+
+        query #2: Find all the books which have the word "Program" in the title:
+            for (b <- books; if b.title indexOf "Program" >= 0)
+            yield b.title
+
+--- Implementation of For-Expressions ---
+    . what they are translated into! (also covered in course1, week6 when presenting For-Expressions)
+
+    . very similar to: map, flatMap and filter
+
+        . defining those with for-Expressions:
+            def mapFun[T, U](xs: List[T], f: T => U): List[U] =
+                for (x <- xs) yield f(x)
+
+            def flatMap[T, U](xs: List[T], f: T => Iterable[U]): List[U] =
+                for (x <- xs; y <- f(x)) yield y
+
+            def filter[T](xs: List[T], p: T => Boolean): List[T] =
+                for (x <- xs if p(x)) yield x
+
+        . the other way also applies, and in fact these is how they are expressed in the Scala compiler
+            -> Expressed using: 'map', 'flatMap' and a lazy variant of 'filter'
+
+            1. Simple for-expression (just one generator, no filters)
+                for (x <- e1) yield e2
+
+                ->> e1.map(x => e2)
+
+            2. A for-expression (generator followed by filter)
+                . s is a (potentially empty) sequence of generators and filters
+                for (x <- e1 if f; s) yield e2
+
+                ->> for (x <- e1.withFilter(x => f); s) yield e2 
+                (and translation continues with he new expression)
+
+                    . 'withFilter' is a variant of 'filter' that does not produce an intermediate list.
+                        Instead if filters the following map or flatmap function application (smarted, more efficent version of filter. A lazy version)
+
+            2. A for-expression (generator followed by another generator)
+                . s is a (potentially empty) sequence of generators and filters
+                for (x <- e1; y <- e2; s) yield e3
+
+                ->> e1.flatMap(x => for (y <- e2; s) yield e3)
+                (and translation continues with he new expression)
+
+            
+            -Note:  case 2 and 3, translates to a for-expression with one fewer filter (2) or generator(3)
+                    once reduced to a simple for-expression like in 1, it is directly translated to a 'map'
+
+   
+    -->>>> This means you can use the For-Expressions for ANY TYPE that has 'map', 'flatMap' and 'withFiler' implemented
+                . arrays, iterators, your own data (databases, XML data, parsers, etc) 
+
+            This is used for Scala databases (ScalaQuery and Slick, which are similar to .NET LINQ)
+
+
+
+--- Functional Random Generators ---
+    . using For-Expressions (in an application outside of collections)
+    . get random values for other domains than Number (booleans, strings, pairs, lists, trees, etc)
+
+
+        - define trait Generator[T] that generates random values of type T
+
+            def Generator[T]{
+                def generate: T
+            }
+
+            - some instances:
+
+                val integers = new Generator[Int] {
+                    val rand = new java.util.Random
+                    def generate = rand.nextInt()
+                }
+
+                val booleans = new Generator[Boolean] {
+                    def generate = integers.generate > 0
+                }
+
+                val pairs = new Generator[(Int, Int)] {
+                    def generate = (integers.generate, integers.generate)
+                }
+
+                ...
+
+            a bit too much work. Each time we have to define a anonymous class that implements generate for a new type
+            Would be nice to define instead like this (using For-Expressions syntax):
+
+                def booleans = for (x <- integers) yield x > 0
+
+                def pairs[T, U](t: Generator[T], u: Generator[U]) = for {
+                    x <- t
+                    y <- u
+                } yield (x, y)
+
+                - for this to work, we only have to defind the 'map' and 'flatMap' for the Generator trait as this for-expressions will be expanded to those methods
+
+                trait Generator[+T] {
+                    self =>  //alias for "this"
+
+                    def generate: T
+
+                    def map[S](f: T => S): Generator[S] = new Generator[S] {
+                        def generate = f(self.generate)    // must use "self" instead of "this" because this would reference this anonymous function itself. This is why we need to create an alias name for the "this" (the 'self')
+                    }
+
+                    def flatMap[S](f: T => Generator[S]): Generator[S] = new Generator[S] {
+                        def generate = f(self.generate).generate
+                }
+
+
+                - Generator Examples that will serve as building blocks for other Types- 
+
+                def single[T](x: T): Generator[T] = new Generator[T] {
+                    def generate = x   //always returns the same value. Not random =P
+                }
+
+                    def choose(lo: Int, hi: Int): Generator[T] = 
+                        for (x <- integers) yeild lo + x % (hi - lo)
+
+                    def oneOf[T](xs: T*): Generator[T] =        //picks on of a list of arguments. '*' means repeating arguments (variable nof args)
+                        for (idx <- choose(0, xs.length)) yield xs(idx) 
+
+                        e.g: oneOf(x, y, z)  would return a random x, y or z
+
+                - More Generator Types -
+
+                    def lists: Generator[List[Int]] = for {
+                        isEmpty <- booleans
+                        list <- if (isEmpty) emptyLists else nonEmptyLists
+                    } yield list
+
+                    def emptyLists = single(Nil)
+
+                    def nonEmptyLists = for {
+                        head <- integers
+                        tail <- lists   //recursive call to the lists generator
+                    } yield head :: tail
+
+
+        -> Important application of random value generation is random testing
+            by generating random test inputs!
+
+            Random Test Function:
+                def test[T](g: Generator[T], numTimes: Int = 100)   //default arguments, yeahhh
+                    (test: T => Boolean): Unit = {
+                        for (i <- 0 until numTimes) {
+                            val value = g.generate
+                            assert(test(value)), "test failed for" + value)
+                        }
+                        printLn("passed" + numTimes + "tests")
+                    }
+
+                e.g:
+                    test(pairs(lists, lists)) {
+                        case (xs, ys) => (xs ++ ys).length > xs.length
+                    }
+
+                    //this test would fail for Nils, hehe. Random testing is nice to catch this cases
+
+                
+                -> This kind of random input tests is embedded in the tool (based on QuickCheck): 
+                    ScalaCheck: https://lamp.epfl.ch/files/content/sites/lamp/files/teaching/progfun/ScalacheckTutorial.html
+                    https://github.com/rickynils/scalacheck/blob/master/doc/UserGuide.md
+
+                        e.g:
+                        forAll { (l1: List:[Int], l2: List:[Int]) =>
+                            l1.size + l2.size == (l1 ++ l2).size
+                        } 
+
+
+
+
+
+
+                
+
+
+
+
+
+        
+
+
+
 
 
 
