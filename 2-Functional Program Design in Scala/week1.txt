@@ -252,6 +252,39 @@
                         } 
 
 
+----------------------------------------------------------------
+
+--- Try Type ---
+    . simlar to 'Option' but instead of Some/None there are the following cases:
+        . Success and Failure
+
+            abstract class Try[+T]
+            case class Success[T](x: T)         extends Try[T]
+            case calss Failure(ex: Exception)   extends Try[Nothing]
+
+    . Used to pass results of operations that can fail (throw errors)
+        . wrap an expression with the Try
+            . Try is implemented as an Object with the apply method, using the Java try/catch (lower case)
+
+            object Try {
+                def apply[T](expr: => T): Try [T] =  //expression passed by name, so it is only evaluated on the "try" and not in the argument (otherwise exception couldnt be caught)
+                try Success(expr)
+                catch {
+                    case NonFatal(ex) => Failure(ex)
+                }
+            }
+
+            . in order for the Try to support being used as For-Expressions, it only needs to support/define flatMap and map (and they are in the Scala Try Object)
+
+
+            . Try is not a Monad, because the 2nd Monad Law (left unit) fails
+                Try(expr) flatMap f != f(expr)      (obvious to confirm. the right side will not catch any exception)
+
+
+            - Try/Monad Bullet-Proof Principle -
+                . An expression composed from 'Try', 'map' and 'flatMap' wil never throw a non-fatal exception
+    
+
 
 
 

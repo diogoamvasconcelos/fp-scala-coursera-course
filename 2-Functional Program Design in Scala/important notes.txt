@@ -1,9 +1,11 @@
 cheat-sheet: https://github.com/lampepfl/progfun-wiki/blob/gh-pages/CheatSheet.md
 react cheat-sheet: https://github.com/sjuvekar/reactive-programming-scala/blob/master/ReactiveCheatSheet.md
-style guid: https://www.coursera.org/learn/progfun2/supplement/nvyNk/scala-style-guide
+style guide: https://www.coursera.org/learn/progfun2/supplement/nvyNk/scala-style-guide
 
 Draw Scala collections class hiereachy (Iterable, Set, Set, Map)
 Draw Scala class hierachy (Any, Object, Nothing, etc)
 
 Lazy variables
+
+
 
