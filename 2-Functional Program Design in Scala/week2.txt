@@ -1,0 +1,225 @@
+----- Lazy Evaluation -----
+
+
+--- Streams ---
+    . ADT similar to Lists, but 'tail' is only evaluated only on-demand
+
+    e.g:
+        problem: get the second prime between 1000 and 10000
+            solution1: ((1000 to 10000) filter IsPrime)(1)
+                . nice onliner, easy to read and understand
+                . very bad performance as it construct all primes from, 1000 to 10000 but only ever uses the first too elements
+
+            solution2: use recursive methods to build the solution, where it searches one at a time
+                . fast but hard to write (many lines and need helper recursive functions) and to understand
+
+            solution3: similar to #1, but using a Streams
+
+    . Streams Usage:
+        . Streams are defined:
+            - constant Stream.empty    (corresponds to Nil of Lists)
+            - constructor Stream.cons   (corresponds to the :: operator of Lists)
+
+            e.g:    val xs = Stream.cons(1, Stream.cons(2, Stream.empty))    //Very much like Lists
+                    val xy = Stream(1, 2, 3)  //also works, using as Factory
+
+            . 'toStream'  -> converts any collection into a stream
+
+                (1 to 1000).toStream     > res: Stream[Int] = Stream(1, ?)   //tail not evaluated yet!
+
+    . Stream Evaluation
+        - ranges: (lo until hi).toStream
+
+            def streamRange(lo: Int, hi: Int): Stream[Int] = 
+                if (lo >= hi) Stream.empty
+                else Stream.cons(lo, streamRange(lo+1, hi))
+
+    . solution to the IsPrime example:
+        ((1000 to 10000)).toStream filter isPrime)(1)    
+
+    -> Stream support almost all methods of Lists
+        . exception:
+            '::'
+
+            x :: xs always produces a list, never a stream.
+
+            alternative is the '#::' operator
+
+            x #:: xs == Stream.cons(x, xs)
+
+    . Implementation:
+        (quite close to the implementation of List)
+
+        trait Stream[+A] extends Seq[A] {
+            def isEmpty: Boolean
+            def head: A
+            def tail: Stream[A]
+            ...  (all other methods can be defined in terms of these three.....just like List)
+        }
+
+        def cons[T](hd: T, tl: => Stream[T]) = new Stream[T] {   // tl is passed by name '=>'
+            def isEmpty = false
+            def head = hd
+            def tail = tl
+        }
+
+        val empty[T] = new Stream[Nothing] {
+            def isEmpty = true
+            def head  = throw new Error("empty.head")
+            def tail = throw new Error("empty.tail")
+        }
+
+        . only difference from List is in fact the 'tail' being passed by name instead of by value!!!
+            . tail is only evaluated at run time when it is accessed, not when defined
+
+
+--- Lazy Evaluation ---
+    -> Do things as LATE as possible and NEVER do them twice!
+
+    . the implementation of stream done above, solves the performance issue, but if tail is called several times, the corresponding stream will be recomputed each time
+        -> this can be solved if you compute the tail when it is requested for the first time, and then cache this value and re-use it for the next times instead of recomputing it
+
+        This optimization is 'safe' to do, since in a pure FP language, an expression will always produce the same result, each time it is evaluated!
+
+        types of evaluation:
+            - by val, or strict evaluation: val is calculated when defined and this value is used from then on
+                val x = expr
+            - by name evaluation: value is recomputed everytime, when accessed/requested/called
+                def x = expr
+            - lazy evaluation: value is only computed the first time it is accessed, but then cached and reused from then on
+                ( as late as possible, but only calculate once!)
+                lazy val x = expr
+
+        NOTE:   Haskell is built on top of this lazy evaluation (where there it is the default evaluation) 
+                Scala uses strict evaluation by default but allows lazy evaluation!
+
+        Problems:
+            quite hard to predict when computations happen and how much memory that require! Undeterministic behaviour that is hard to debug and predict!
+            if used in a pure FP way, should be fine, as when it things happen dont matter. When mixed with mutable state (as Scala allows), it gets very complicated
+
+
+    example:
+        def expr = {
+            val x = { print("x); 1}
+            val y = { print("y); 2}
+            val z = { print("z); 3}
+
+            z + y + x + z + y + x
+        }
+        expr
+
+        runing this program (that evaluates expr) would print as a side effect the following: "xzyz"
+
+        
+    . for the stream implementation, 'cons' should be:
+        def cons[T](hd: T, tl: => Stream[T]) = new Stream[T] {   // tl is passed by name '=>'
+            def isEmpty = false
+            def head = hd
+            lazy val tail = tl
+        }
+
+
+
+    - Making sure Lazy Val really works, by analazying a simple expression and appling the substitution model:
+
+        (streamRange(1000, 10000) filter isPrime) apply 1    // apply == (1) == [1] == second element
+
+        i) expanding streamRange
+
+            (if (1000 >= 1000) empty
+             else cons (1000, stramRange(1000 + 1, 10000)))
+             .filter(isPrime).apply(1)
+
+        ii) evaluating 'if-else'
+
+            cons (1000, stramRange(1000 + 1, 10000))
+            .filter(isPrime).apply(1)
+
+        iii) abbreviate 'cons (1000, stramRange(1000 + 1, 10000)' to C1
+
+            C1.filter(isPrime).apply(1)
+
+        ...) expand filter
+
+            (if (C1.isEmpty) C1)
+             else if (isPrime(C1.head)) cons(C1.head, C1.tail.filter(isPrime))
+             else C1.tail.filter(isPrime))
+             .apply(1)
+
+        ...) eval first if
+            
+            if (isPrime(C1.head)) cons(C1.head, C1.tail.filter(isPrime))
+            else C1.tail.filter(isPrime))
+            .apply(1)
+
+        ...) eval first C1.head
+
+            if (isPrime(1000)) cons(C1.head, C1.tail.filter(isPrime))
+            else C1.tail.filter(isPrime))
+            .apply(1)
+
+
+        ...) eval isPrime
+
+            if (false) cons(C1.head, C1.tail.filter(isPrime))
+            else C1.tail.filter(isPrime))
+            .apply(1)
+
+        .... eval if again
+        .... eval C1.tail == stream (1001, 1000)
+
+            streamRange(1001, 10000)
+            .filter(isPrime).apply(1)    <- same expression as the first one, except 1001 instead if 1000
+
+        .... and so one (see lecture2.3 video) 
+            the evalation finds the first prime and continous (now with apply(0)
+            once it find the second prime it stops and returns it.
+                NO EXTRA evaluations/computations done. Indeed LAZY!!!
+
+
+--- Infinite Sequences/Streams ---
+    . Lazy Evaluation makes it possible to work with infinite sequences and with infinte recursion!!
+
+    - Infinite Stream -
+        . example: 
+            - all integers starting from a given number
+                def from(n: Int): Stream[Int] = n #:: from(n+1)    //no end!!!
+
+            . all natural numbers:
+                val nat = from(0)    //this would work although is creating a strict val!
+
+            - calculate prime numbers, using the Sieve of Eratosthenes
+                . method:
+                    i) start with all integers from 2, the first prime number
+                    ii) eliminate all multiples of 2
+                    iii) eliminate all multiples of 3
+                    iv) iterate forver, at each step, the next first number in the list is a prime number, and we elminate all its multiples!
+
+            - square roots:
+                . using the same method as seen in course 1, but the termination criteria is not necessay (isGoodEnough), as we dont need to worry when it will terminate
+                . this would return a stream of all the consecutive estimation (improved by the previous value)
+
+
+---- Guiding Principals for Good Desing ----
+    . good FP desing
+    
+    -> Name Evetyhing you can
+        . FP lets you break down the problem into very small computations. Name these small pieces so it is easier to read and follow your code
+
+    -> Put operations into natural scopes
+        . dont inline very complex operations!
+
+    -> Keep degrees of fredom for future refinements
+        . try to encapsulate implementation from clients so that you can improve it in the future without changing the API
+
+
+
+
+
+
+
+
+
+
+
+

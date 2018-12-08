@@ -7,5 +7,6 @@ Draw Scala class hierachy (Any, Object, Nothing, etc)
 
 Lazy variables
 
+Implicit argumens (functions): http://baddotrobot.com/blog/2015/07/03/scala-implicit-parameters/
 
 
